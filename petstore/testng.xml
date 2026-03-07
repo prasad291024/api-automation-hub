@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    TestNG Configuration for Petstore API Automation Framework
+
+    This suite runs all test classes in a structured manner:
+    - Individual API endpoint tests run in parallel for faster execution
+    - End-to-End flow test runs last to validate the complete workflow
+
+    Author: Prasad_V
+    Version: 1.0
+-->
+
+<suite name="Petstore API Automation Test Suite" verbose="1" parallel="tests" thread-count="3">
+
+    <!-- Suite-level parameters -->
+    <parameter name="baseUrl" value="https://petstore.swagger.io/v2"/>
+
+    <!-- Listeners for Allure Reporting -->
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+
+    <!-- Test 1: Create Pet API Tests -->
+    <test name="Create Pet Tests" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.CreatePetTests"/>
+        </classes>
+    </test>
+
+    <!-- Test 2: Get Pet API Tests -->
+    <test name="Get Pet Tests" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.GetPetTests"/>
+        </classes>
+    </test>
+
+    <!-- Test 3: Update Pet API Tests -->
+    <test name="Update Pet Tests" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.UpdatePetTests"/>
+        </classes>
+    </test>
+
+    <!-- Test 4: Delete Pet API Tests -->
+    <test name="Delete Pet Tests" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.DeletePetTests"/>
+        </classes>
+    </test>
+
+    <!-- Test 5: Find Pets by Status Tests -->
+    <test name="Find Pets by Status Tests" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.FindPetsByStatusTests"/>
+        </classes>
+    </test>
+
+    <!-- Test 6: End-to-End Flow Test (Runs Last) -->
+    <test name="End-to-End Flow Test" preserve-order="true">
+        <classes>
+            <class name="com.petstore.api.tests.EndToEndFlowTest"/>
+        </classes>
+    </test>
+
+</suite>

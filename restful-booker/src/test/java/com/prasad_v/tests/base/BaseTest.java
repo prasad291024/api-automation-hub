@@ -1,0 +1,56 @@
+package com.prasad_v.tests.base;
+
+import com.prasad_v.constants.APIConstants;
+import com.prasad_v.config.ConfigurationManager;
+import com.prasad_v.config.EnvironmentManager;
+import com.prasad_v.asserts.AssertActions;
+import com.prasad_v.modules.PayloadManager;
+import com.prasad_v.interceptors.RequestResponseInterceptor;
+import com.prasad_v.utils.RestUtils;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
+import io.restassured.specification.RequestSpecification;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeMethod;
+
+/**
+ * BaseTest class provides a foundation for all API tests.
+ * It sets up common configurations such as base URL, headers, and authentication token retrieval.
+ */
+public class BaseTest {
+    protected ConfigurationManager config;
+    public RequestSpecification requestSpecification;
+    public AssertActions assertActions;
+    public PayloadManager payloadManager;
+    public JsonPath jsonPath;
+    public Response response;
+    public ValidatableResponse validatableResponse;
+
+    @BeforeSuite(alwaysRun = true)
+    public void initEnvironment() {
+        EnvironmentManager.getInstance().initializeEnvironment();
+    }
+
+    @BeforeMethod(alwaysRun = true)
+    public void setUp() {
+        config = ConfigurationManager.getInstance();
+        payloadManager = new PayloadManager();
+        assertActions = new AssertActions();
+        String baseUrl = config.getProperty("api.base.url", APIConstants.BASE_URL);
+        requestSpecification = new RequestSpecBuilder()
+                .setBaseUri(baseUrl)
+                .addHeader("Content-Type", "application/json")
+                .addFilter(new RequestResponseInterceptor())
+                .build();
+    }
+
+    public String getToken() {
+        String baseUrl = config.getProperty("api.base.url", APIConstants.BASE_URL);
+        requestSpecification.baseUri(baseUrl).basePath(APIConstants.AUTH_URL).contentType(ContentType.JSON);
+        response = RestUtils.post(requestSpecification, payloadManager.setAuthPayload());
+        return payloadManager.getTokenFromJSON(response.asString());
+    }
+}

@@ -54,8 +54,12 @@ public class SecureConfigManager {
         return getSecureProperty("auth.username");
     }
 
+//    public String getPassword() {
+//        return getDecodedProperty("auth.password");
+//    }
+
     public String getPassword() {
-        return getDecodedProperty("auth.password");
+        return getSecureProperty("auth.password");
     }
 
     public String getClientId() {

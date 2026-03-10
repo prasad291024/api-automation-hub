@@ -1,0 +1,2 @@
+PUT https://restful-booker.herokuapp.com/booking/3005
+{ "firstname": "James", "lastname": "Bond" }

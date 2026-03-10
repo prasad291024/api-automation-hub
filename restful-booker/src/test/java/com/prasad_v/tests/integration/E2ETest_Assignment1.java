@@ -8,21 +8,20 @@ package com.prasad_v.tests.integration;
         ✔ Verify that the booking is no longer accessible (GET /booking/{id} should return 404).
 */
 
-import io.restassured.RestAssured;
+import com.prasad_v.tests.base.BaseTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import static io.restassured.RestAssured.*;
 
-public class E2ETest_Assignment1 {
-    private static final String BASE_URL = "https://restful-booker.herokuapp.com";
+public class E2ETest_Assignment1 extends BaseTest {
 
     public int createBooking() {
         String requestBody = "{ \"firstname\": \"John\", \"lastname\": \"Doe\", \"totalprice\": 150, \"depositpaid\": true, \"bookingdates\": { \"checkin\": \"2025-03-25\", \"checkout\": \"2025-03-30\" }, \"additionalneeds\": \"Breakfast\" }";
 
         Response response = given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking")
                 .contentType(ContentType.JSON)
                 .body(requestBody)
@@ -37,7 +36,7 @@ public class E2ETest_Assignment1 {
 
     public void deleteBooking(int bookingId, String token) {
         given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking/" + bookingId)
                 .header("Cookie", "token=" + token)
                 .when()
@@ -50,13 +49,13 @@ public class E2ETest_Assignment1 {
     @Test
     public void testCreateDeleteVerifyBooking() {
         int bookingId = createBooking();
-        String token = "2c4a5606ad3dc3b";  // Replace with actual token
+        String token = getToken();
 
         deleteBooking(bookingId, token);
 
         // Verify the booking is deleted (should return 404)
         given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking/" + bookingId)
                 .when()
                 .get()

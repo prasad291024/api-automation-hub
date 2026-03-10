@@ -1,0 +1,2 @@
+PUT https://restful-booker.herokuapp.com/booking/3262
+{"firstname":"Lucky","lastname":"Charming","totalprice":156,"depositpaid":true,"bookingdates":{"checkin":"2024-02-01","checkout":"2024-02-05"},"additionalneeds":"Breakfast"}

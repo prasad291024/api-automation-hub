@@ -1,0 +1,2 @@
+GET https://restful-booker.herokuapp.com/v1/users/1
+{"expected_status":201,"name":"Robert Johnson","job":"QA Engineer"}

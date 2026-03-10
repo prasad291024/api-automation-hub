@@ -57,7 +57,7 @@ public class TestE2EFlow_02 extends BaseTest {
      * Step 2: Verify Booking was Created
      * - Sends GET request to check booking exists
      */
-    @Test(priority = 2)
+    @Test(priority = 2, dependsOnMethods = "createBooking")
     @Owner("Prasad")
     @Description("TC#E2E2 - Step 2: Verify booking by ID exists after creation")
     public void verifyBooking(ITestContext context) {
@@ -88,7 +88,7 @@ public class TestE2EFlow_02 extends BaseTest {
      * Step 3: Delete the Booking
      * - Requires authentication token
      */
-    @Test(priority = 3)
+    @Test(priority = 3, dependsOnMethods = "verifyBooking")
     @Owner("Prasad")
     @Description("TC#E2E2 - Step 3: Delete the booking using token")
     public void deleteBooking(ITestContext context) {
@@ -117,7 +117,7 @@ public class TestE2EFlow_02 extends BaseTest {
      * Step 4: Verify Booking is Deleted
      * - Expects 404 when accessing deleted booking
      */
-    @Test(priority = 4)
+    @Test(priority = 4, dependsOnMethods = "deleteBooking")
     @Owner("Prasad")
     @Description("TC#E2E2 - Step 4: Verify booking no longer exists")
     public void verifyBookingDeleted(ITestContext context) {

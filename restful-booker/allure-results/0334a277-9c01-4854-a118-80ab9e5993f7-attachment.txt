@@ -1,0 +1,3 @@
+Status: 200
+Time: 1070ms
+{"firstname":"Michael","lastname":"Scott","totalprice":200,"depositpaid":false,"bookingdates":{"checkin":"2025-04-01","checkout":"2025-04-05"},"additionalneeds":"Lunch"}

@@ -1,0 +1,2 @@
+POST https://restful-booker.herokuapp.com/booking
+{ "firstname": "John", "lastname": "Doe", "totalprice": 150, "depositpaid": true, "bookingdates": { "checkin": "2025-03-25", "checkout": "2025-03-30" }, "additionalneeds": "Breakfast" }

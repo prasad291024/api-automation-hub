@@ -1,0 +1,2 @@
+PUT https://restful-booker.herokuapp.com/v1/users/2
+{"name":"Updated User Name","email":"updated.email@***REDACTED***"}

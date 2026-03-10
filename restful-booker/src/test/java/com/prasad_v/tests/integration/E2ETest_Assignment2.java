@@ -8,20 +8,19 @@ package com.prasad_v.tests.integration;
         ✔ Validate that deletion fails with 403 (Forbidden).
 */
 
-import io.restassured.RestAssured;
+import com.prasad_v.tests.base.BaseTest;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import static io.restassured.RestAssured.*;
 
-public class E2ETest_Assignment2 {
-    private static final String BASE_URL = "https://restful-booker.herokuapp.com";
+public class E2ETest_Assignment2 extends BaseTest {
 
     @Test
     public void testGetAndTryToDeleteBooking() {
         // Fetch all bookings
         Response response = given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking")
                 .when()
                 .get();
@@ -34,7 +33,7 @@ public class E2ETest_Assignment2 {
 
         // Try to delete the booking WITHOUT authentication
         given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking/" + bookingId)
                 .when()
                 .delete()

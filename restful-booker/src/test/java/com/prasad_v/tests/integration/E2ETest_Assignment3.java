@@ -9,21 +9,20 @@ package com.prasad_v.tests.integration;
         ✔ Verify deletion was successful (GET /booking/{id} should return 404).
 */
 
-import io.restassured.RestAssured;
+import com.prasad_v.tests.base.BaseTest;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import static io.restassured.RestAssured.*;
 
-public class E2ETest_Assignment3 {
-    private static final String BASE_URL = "https://restful-booker.herokuapp.com";
+public class E2ETest_Assignment3 extends BaseTest {
 
     public int createBooking() {
         String requestBody = "{ \"firstname\": \"John\", \"lastname\": \"Doe\", \"totalprice\": 150, \"depositpaid\": true, \"bookingdates\": { \"checkin\": \"2025-03-25\", \"checkout\": \"2025-03-30\" }, \"additionalneeds\": \"Breakfast\" }";
 
         Response response = given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking")
                 .contentType(ContentType.JSON)
                 .body(requestBody)
@@ -39,13 +38,13 @@ public class E2ETest_Assignment3 {
     @Test
     public void testCreateUpdateDeleteBooking() {
         int bookingId = createBooking();
-        String token = "2c4a5606ad3dc3b";
+        String token = getToken();
 
         // Update booking
         String updateRequestBody = "{ \"firstname\": \"Michael\", \"lastname\": \"Scott\", \"totalprice\": 200, \"depositpaid\": false, \"bookingdates\": { \"checkin\": \"2025-04-01\", \"checkout\": \"2025-04-05\" }, \"additionalneeds\": \"Lunch\" }";
 
         given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking/" + bookingId)
                 .header("Cookie", "token=" + token)
                 .contentType(ContentType.JSON)
@@ -58,7 +57,7 @@ public class E2ETest_Assignment3 {
 
         // Delete booking
         given()
-                .baseUri(BASE_URL)
+                .spec(requestSpecification)
                 .basePath("/booking/" + bookingId)
                 .header("Cookie", "token=" + token)
                 .when()

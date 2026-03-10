@@ -1,0 +1,3 @@
+Status: 200
+Time: 1548ms
+{"bookingid":3715,"booking":{"firstname":"Prasad","lastname":"Valiv","totalprice":143,"depositpaid":true,"bookingdates":{"checkin":"2024-02-01","checkout":"2024-02-01"},"additionalneeds":"Dinner"}}

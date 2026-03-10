@@ -1,0 +1,1 @@
+GET https://restful-booker.herokuapp.com/v1/products/search?minPrice=100&maxPrice=500&category=electronics

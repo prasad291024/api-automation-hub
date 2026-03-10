@@ -1,0 +1,2 @@
+POST https://restful-booker.herokuapp.com/auth
+{"username":"dev-api-user","password":"***REDACTED***"}

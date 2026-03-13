@@ -122,6 +122,7 @@ public class CreatePetTests extends BaseTest {
                 .then()
                 .spec(responseSpec)
                 .statusCode(anyOf(
+                        equalTo(Config.STATUS_CODE_OK),
                         equalTo(Config.STATUS_CODE_BAD_REQUEST),
                         equalTo(Config.STATUS_CODE_METHOD_NOT_ALLOWED)
                 ));

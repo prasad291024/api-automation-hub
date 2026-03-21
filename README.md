@@ -1,237 +1,103 @@
 # api-automation-hub
 
-> A Maven multi-module API test automation framework built with Java 17, REST Assured, TestNG, and Allure Reporting.
+A Maven multi-module API test automation framework built with Java 17, REST Assured, TestNG, and Allure.
 
----
+## Project Overview
 
-## 📌 Project Overview
-
-`api-automation-hub` is a multi-module Maven project that brings together two independent API test projects under a single shared engine (`framework-core`). It promotes code reuse, consistent reporting, and centralised dependency management across all test modules.
+`api-automation-hub` combines two API test projects under one shared engine (`framework-core`) for reusable utilities, centralized dependencies, and consistent reporting.
 
 ### Modules
 
 | Module | Description |
 |---|---|
-| `framework-core` | Shared engine JAR — RestAssured, Allure, Logging, Retry, Auth, Validation |
-| `restful-booker` | API tests for the Restful Booker booking API (CRUD + E2E flows) |
-| `petstore` | API tests for the Swagger Petstore API (CRUD + E2E flows) |
+| `framework-core` | Shared engine: request builders, config, retry, listeners, logging, validation |
+| `restful-booker` | API tests for Restful Booker (CRUD + integration + E2E) |
+| `petstore` | API tests for Swagger Petstore (CRUD + E2E) |
 
----
-
-## 🏗️ Architecture
-
-```
-api-automation-hub/                  ← Parent POM (packaging=pom)
-├── framework-core/                  ← Shared engine (JAR)
-│   └── src/main/java/com/prasad_v/
-│       ├── annotations/             ← Custom annotations
-│       ├── auth/                    ← Auth handlers (Basic, OAuth, Token)
-│       ├── config/                  ← ConfigurationManager, EnvironmentManager
-│       ├── constants/               ← API and config constants
-│       ├── contracts/               ← Contract validation
-│       ├── enums/                   ← RequestType enums
-│       ├── exceptions/              ← Custom exceptions
-│       ├── interceptors/            ← Request/response interceptors
-│       ├── listeners/               ← TestNG execution listeners
-│       ├── logging/                 ← CustomLogger, LogManager, LogSanitizer
-│       ├── mock/                    ← MockServer manager
-│       ├── reporting/               ← Allure & Extent report managers
-│       ├── requestbuilder/          ← RequestBuilder, HeaderManager
-│       ├── retry/                   ← RetryAnalyzer, RetryListener
-│       ├── services/                ← BaseApiService
-│       ├── testdata/                ← Excel & JSON data providers
-│       ├── utils/                   ← RestUtils, DateUtils, AllureManager
-│       └── validation/              ← Schema, JSON path, response validators
-│
-├── restful-booker/                  ← Booking API test module
-│   └── src/
-│       ├── main/java/com/prasad_v/
-│       │   ├── builders/            ← BookingBuilder
-│       │   ├── modules/             ← PayloadManager
-│       │   ├── pojos/               ← Booking, Auth, BookingResponse POJOs
-│       │   ├── services/            ← BookingService, UserService
-│       │   └── utils/               ← TestDataProvider
-│       └── test/java/com/prasad_v/
-│           ├── asserts/             ← AssertActions
-│           └── tests/               ← CRUD + E2E + Integration tests
-│
-└── petstore/                        ← Petstore API test module
-    └── src/
-        ├── main/java/com/petstore/api/
-        │   ├── config/              ← Config (base URL, endpoints, status codes)
-        │   ├── models/              ← Pet, Category, Tag POJOs
-        │   └── services/            ← PetService
-        └── test/java/com/petstore/api/
-            ├── base/                ← BaseTest (ConfigurationManager integrated)
-            ├── dataproviders/       ← TestDataProvider
-            └── tests/               ← CreatePet, GetPet, UpdatePet, DeletePet, E2E tests
-```
-
----
-
-## ⚙️ Tech Stack
+## Tech Stack
 
 | Technology | Version |
 |---|---|
 | Java | 17 |
-| Maven | Multi-Module |
+| Maven | Multi-module |
 | REST Assured | 5.5.5 |
 | TestNG | 7.11.0 |
-| Allure Reporting | 2.29.1 |
-| Lombok | 1.18.38 |
-| Jackson | 2.19.0 |
-| Log4j2 | 2.24.3 |
-| AssertJ | 3.27.3 |
-| AspectJ Weaver | 1.9.22.1 |
+| Allure | 2.29.1 adapters + CLI |
+| AspectJ Weaver | 1.9.24 |
 
----
+## Allure Report Showcase
 
-## 🛠️ Prerequisites
+This repository includes full Allure integration:
 
-Before running the project, ensure you have:
+- Request/response attachments
+- Failure stack traces + API snapshots
+- Test metadata (`Epic`, `Feature`, `Story`, `Severity`, `Owner`, `TmsLink`)
+- Auto-generated `environment.properties`, `categories.json`, and `executor.json`
+- History/trend support in CI
 
-- **JDK 17+** installed (project tested with JDK 25)
-- **Maven 3.8+** installed
-- **IntelliJ IDEA** (recommended) with Lombok plugin enabled
-- **Allure CLI** installed (for generating reports locally)
-  - Install via: `npm install -g allure-commandline` or `brew install allure`
-- **Internet access** to reach the Restful Booker and Petstore APIs
+Live report (GitHub Pages):
 
-### Verify your setup
+- [Latest Allure Report](https://prasad291024.github.io/api-automation-hub/)
 
-```bash
-java -version
-mvn -version
-allure --version
-```
+Workflow that publishes the report:
 
----
+- [.github/workflows/allure-report.yml](.github/workflows/allure-report.yml)
 
-## 🚀 Setup & Installation
+Sample Allure report view:
 
-### 1. Clone the repository
+![Allure Report Screenshot](docs/images/allure-report.png)
 
-```bash
-git clone https://github.com/prasad291024/api-automation-hub.git
-cd api-automation-hub
-```
+## Prerequisites
 
-### 2. Build all modules
+- JDK 17+
+- Maven 3.8+
+- Node.js (for `npx allure-commandline` fallback)
+- Internet access to hit public API endpoints
 
-```bash
-mvn clean install -DskipTests
-```
+## How To Run Tests
 
-This will:
-- Build `framework-core` and install it as a JAR in your local Maven repository
-- Compile `restful-booker` and `petstore` modules
-
-### 3. Enable Annotation Processing in IntelliJ
-
-Go to **File > Settings > Build, Execution, Deployment > Compiler > Annotation Processors** and ensure **Enable annotation processing** is checked ✅
-
----
-
-## ▶️ How to Run Tests
-
-### Run all modules together
+Run all modules:
 
 ```bash
 mvn clean test
 ```
 
-### Run a specific module only
+Run specific module:
 
 ```bash
-# Restful Booker tests only
-mvn test -pl restful-booker
-
-# Petstore tests only
-mvn test -pl petstore
-```
-
-### Run a specific TestNG suite
-
-```bash
-# Run E2E tests for restful-booker
-mvn test -pl restful-booker -Dsurefire.suiteXmlFiles=testng_E2E.xml
-
-# Run regression suite
-mvn test -pl restful-booker -Dsurefire.suiteXmlFiles=testng_reg.xml
-
-# Run parallel tests
-mvn test -pl restful-booker -Dsurefire.suiteXmlFiles=testng_parallel.xml
-```
-
-### Build framework-core only (reinstall JAR)
-
-```bash
-mvn clean install -pl framework-core -DskipTests
-```
-
----
-
-## 📊 How to Generate Allure Reports
-
-### Step 1 — Run tests (generates allure-results)
-
-```bash
-mvn clean test -pl restful-booker
+mvn -pl restful-booker -am clean test
 # or
-mvn clean test -pl petstore
+mvn -pl petstore -am clean test
 ```
 
-### Step 2 — Generate and open the report
+## How To Generate Allure Report (Local)
 
 ```bash
-# For restful-booker
-allure serve restful-booker/target/allure-results
-
-# For petstore
-allure serve petstore/target/allure-results
+mvn clean test
+npx --yes allure-commandline generate allure-results --clean -o allure-report
+npx --yes allure-commandline open allure-report
 ```
 
-### Step 3 — Generate static report (optional)
+If GNU Make is available:
 
 ```bash
-allure generate restful-booker/target/allure-results -o restful-booker/target/allure-report --clean
-allure open restful-booker/target/allure-report
+make test-allure
+make allure-report
+make allure-open
 ```
 
----
+## Report History and Trends
 
-## 🔧 Configuration
+To preserve trend graphs between runs, copy previous history before generating a new report:
 
-### Restful Booker environments
-
-Config files are located at:
-`restful-booker/src/test/resources/config/`
-
-| File | Environment |
-|---|---|
-| `dev.properties` | Development |
-| `qa.properties` | QA |
-| `prod.properties` | Production |
-
-### Petstore configuration
-
-The base URL is managed via:
-`petstore/src/test/resources/config/petstore.properties`
-
-```properties
-base.url=https://petstore.swagger.io/v2
+```bash
+mkdir -p allure-results/history
+cp -R allure-report/history/. allure-results/history/
 ```
 
----
+(Handled automatically in CI workflow.)
 
-## 👤 Author
+## Author
 
-**Prasad** — SDET | API Automation Engineer
-
-🔗 GitHub: [prasad291024](https://github.com/prasad291024)
-
----
-
-## 📄 License
-
-This project is for learning and portfolio purposes.
+Prasad - SDET | API Automation Engineer  
+GitHub: [prasad291024](https://github.com/prasad291024)

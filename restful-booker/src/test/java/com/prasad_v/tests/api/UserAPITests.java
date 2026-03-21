@@ -9,6 +9,7 @@ import com.prasad_v.requestbuilder.RequestBuilder;
 import com.prasad_v.constants.APIConstants;
 import com.prasad_v.enums.RequestType;
 
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +26,9 @@ import java.util.Map;
 /**
  * Test class for User API endpoints
  */
+@Epic("Restful Booker API Automation")
+@Feature("User API")
+@Owner("Prasad")
 public class UserAPITests extends BaseTest {
 
     private static final Logger logger = LogManager.getLogger(UserAPITests.class);
@@ -43,8 +47,14 @@ public class UserAPITests extends BaseTest {
     }
 
     @Test(description = "Verify get all users API returns success status code")
+    @Story("List users")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Validates that GET /users returns 200 with JSON payload under response-time SLA.")
+    @Link(name = "Users API Spec", url = "https://example.internal/docs/users")
+    @TmsLink("RB-USER-101")
     public void testGetAllUsers() {
         logger.info("Starting test: testGetAllUsers");
+        Allure.parameter("env", System.getenv().getOrDefault("ENV", "local"));
 
         Response response = requestBuilder.setBaseURI(getBaseUrl())
                 .setBasePath(APIConstants.USERS_ENDPOINT)
@@ -53,7 +63,7 @@ public class UserAPITests extends BaseTest {
                 .execute();
 
         // Validate response status code
-        ResponseValidator.assertStatusCode(response, 200);
+        verifyStatusCode(response, 200);
 
         // Validate response time
         ResponseTimeValidator.assertResponseTime(response, RESPONSE_TIME_THRESHOLD);
@@ -62,6 +72,8 @@ public class UserAPITests extends BaseTest {
         Assert.assertTrue(ResponseValidator.validateContentType(response, "application/json"),
                 "Content type validation failed");
 
+        attachResponse("Get All Users Response", response);
+
         // Log response details
         logger.info("Response body: " + response.getBody().asString());
         logger.info("Response time: " + response.getTime() + " ms");
@@ -69,6 +81,10 @@ public class UserAPITests extends BaseTest {
     }
 
     @Test(description = "Verify get user by ID returns correct user data")
+    @Story("Get user by id")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Fetches a user by id and validates required fields against schema constraints.")
+    @TmsLink("RB-USER-102")
     public void testGetUserById() {
         logger.info("Starting test: testGetUserById");
 
@@ -82,7 +98,7 @@ public class UserAPITests extends BaseTest {
                 .execute();
 
         // Validate response status code
-        ResponseValidator.assertStatusCode(response, 200);
+        verifyStatusCode(response, 200);
 
         // Validate response schema
         SchemaValidator.assertSchema(response, USER_SCHEMA);
@@ -95,6 +111,7 @@ public class UserAPITests extends BaseTest {
         // Validate specific field value
         Assert.assertTrue(ResponseValidator.validateField(response, "id", userId),
                 "User ID validation failed");
+        attachResponse("Get User By Id Response", response);
 
         logger.info("Test completed: testGetUserById");
     }
@@ -220,5 +237,15 @@ public class UserAPITests extends BaseTest {
 
     private String getBaseUrl() {
         return config.getProperty("api.base.url") + config.getProperty("api.version");
+    }
+
+    @Step("Verify status code is {expectedStatus}")
+    private void verifyStatusCode(Response apiResponse, int expectedStatus) {
+        ResponseValidator.assertStatusCode(apiResponse, expectedStatus);
+    }
+
+    @Step("Attach response payload: {attachmentName}")
+    private void attachResponse(String attachmentName, Response apiResponse) {
+        Allure.addAttachment(attachmentName, "application/json", apiResponse.asString());
     }
 }

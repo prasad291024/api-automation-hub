@@ -11,6 +11,7 @@ import com.prasad_v.enums.RequestType;
 import com.prasad_v.auth.AuthenticationFactory;
 import com.prasad_v.auth.OAuthHandler;
 
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +28,9 @@ import java.util.Map;
 /**
  * Test class for Product API endpoints
  */
+@Epic("Restful Booker API Automation")
+@Feature("Product API")
+@Owner("Prasad")
 public class ProductAPITests extends BaseTest {
 
     private static final Logger logger = LogManager.getLogger(ProductAPITests.class);
@@ -46,8 +50,13 @@ public class ProductAPITests extends BaseTest {
     }
 
     @Test(description = "Verify get all products API returns success status code")
+    @Story("List products")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Checks that GET /products returns 200 and acceptable response time.")
+    @TmsLink("RB-PROD-101")
     public void testGetAllProducts() {
         logger.info("Starting test: testGetAllProducts");
+        Allure.parameter("env", System.getenv().getOrDefault("ENV", "local"));
 
         Response response = requestBuilder.setBaseURI(getBaseUrl())
                 .setBasePath(APIConstants.PRODUCTS_ENDPOINT)
@@ -56,7 +65,7 @@ public class ProductAPITests extends BaseTest {
                 .execute();
 
         // Validate response status code
-        ResponseValidator.assertStatusCode(response, 200);
+        verifyStatusCode(response, 200);
 
         // Validate response time
         ResponseTimeValidator.assertResponseTime(response, RESPONSE_TIME_THRESHOLD);
@@ -68,6 +77,7 @@ public class ProductAPITests extends BaseTest {
         // Log performance category
         String performanceCategory = ResponseTimeValidator.categorizeResponseTime(response);
         logger.info("API Performance Category: " + performanceCategory);
+        attachResponse("Get All Products Response", response);
 
         logger.info("Test completed: testGetAllProducts");
     }
@@ -106,11 +116,16 @@ public class ProductAPITests extends BaseTest {
 
     @Test(description = "Verify create product API works correctly",
             dataProvider = "createProductData")
+    @Story("Create product")
+    @Severity(SeverityLevel.BLOCKER)
+    @Description("Creates a new product using OAuth token and verifies persisted fields.")
+    @Link(name = "Products API Spec", url = "https://example.internal/docs/products")
+    @TmsLink("RB-PROD-201")
     public void testCreateProduct(Map<String, Object> productData) {
         logger.info("Starting test: testCreateProduct with data: " + productData);
 
         // This endpoint requires authentication
-        String token = authHandler.getToken();
+        String token = fetchAuthToken();
 
         Response response = requestBuilder.setBaseURI(getBaseUrl())
                 .setBasePath(APIConstants.PRODUCTS_ENDPOINT)
@@ -121,7 +136,7 @@ public class ProductAPITests extends BaseTest {
                 .execute();
 
         // Validate response status code
-        ResponseValidator.assertStatusCode(response, 201);
+        verifyStatusCode(response, 201);
 
         // Validate that product was created with correct data
         Assert.assertTrue(ResponseValidator.validateField(response, "name", productData.get("name")),
@@ -130,6 +145,7 @@ public class ProductAPITests extends BaseTest {
                 "Product price validation failed");
         Assert.assertTrue(ResponseValidator.validateField(response, "category", productData.get("category")),
                 "Product category validation failed");
+        attachResponse("Create Product Response", response);
 
         logger.info("Test completed: testCreateProduct");
     }
@@ -282,5 +298,20 @@ public class ProductAPITests extends BaseTest {
 
     private String getBaseUrl() {
         return config.getProperty("api.base.url") + config.getProperty("api.version");
+    }
+
+    @Step("Fetch OAuth token")
+    private String fetchAuthToken() {
+        return authHandler.getToken();
+    }
+
+    @Step("Verify status code is {expectedStatus}")
+    private void verifyStatusCode(Response apiResponse, int expectedStatus) {
+        ResponseValidator.assertStatusCode(apiResponse, expectedStatus);
+    }
+
+    @Step("Attach response payload: {attachmentName}")
+    private void attachResponse(String attachmentName, Response apiResponse) {
+        Allure.addAttachment(attachmentName, "application/json", apiResponse.asString());
     }
 }

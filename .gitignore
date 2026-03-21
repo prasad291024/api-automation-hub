@@ -38,4 +38,7 @@ build/
 ### Mac OS ###
 .DS_Store
 petstore/logs/
-
+allure-results/
+allure-report/
+# Keep history only if you intentionally version it:
+#!allure-results/history/

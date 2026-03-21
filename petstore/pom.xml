@@ -14,9 +14,11 @@
     <packaging>jar</packaging>
 
     <properties>
-        <aspectj.version>1.9.22.1</aspectj.version>
-        <maven-surefire.version>3.5.2</maven-surefire.version>
+        <aspectj.version>1.9.24</aspectj.version>
+        <maven-surefire.version>3.2.5</maven-surefire.version>
         <maven-compiler.version>3.13.0</maven-compiler.version>
+        <allure.maven.version>2.14.0</allure.maven.version>
+        <allure.report.version>2.29.1</allure.report.version>
     </properties>
 
     <dependencies>
@@ -90,7 +92,7 @@
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                     </argLine>
                     <systemPropertyVariables>
-                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+                        <allure.results.directory>${maven.multiModuleProjectDirectory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -98,10 +100,10 @@
             <plugin>
                 <groupId>io.qameta.allure</groupId>
                 <artifactId>allure-maven</artifactId>
-                <version>2.14.0</version>
+                <version>${allure.maven.version}</version>
                 <configuration>
-                    <reportVersion>2.29.1</reportVersion>
-                    <resultsDirectory>${project.build.directory}/allure-results</resultsDirectory>
+                    <reportVersion>${allure.report.version}</reportVersion>
+                    <resultsDirectory>${maven.multiModuleProjectDirectory}/allure-results</resultsDirectory>
                 </configuration>
             </plugin>
         </plugins>

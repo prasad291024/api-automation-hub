@@ -19,6 +19,8 @@
 
     <!-- Listeners for Allure Reporting -->
     <listeners>
+        <listener class-name="com.prasad_v.retry.RetryListener"/>
+        <listener class-name="com.prasad_v.listeners.TestExecutionListener"/>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
     </listeners>
 

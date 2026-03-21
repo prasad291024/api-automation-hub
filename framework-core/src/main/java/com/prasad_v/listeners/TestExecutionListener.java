@@ -1,5 +1,6 @@
 package com.prasad_v.listeners;
 
+import com.prasad_v.allure.AllureMetadataWriter;
 import com.prasad_v.reporting.ExtentReportManager;
 import com.prasad_v.reporting.ExtentTestManager;
 import io.qameta.allure.Allure;
@@ -8,6 +9,8 @@ import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 
 /**
@@ -18,6 +21,7 @@ public class TestExecutionListener implements ITestListener {
     @Override
     public void onStart(ITestContext context) {
         ExtentReportManager.getInstance();
+        AllureMetadataWriter.initialize(context.getSuite().getName());
     }
 
     @Override
@@ -25,6 +29,7 @@ public class TestExecutionListener implements ITestListener {
         String testName = result.getMethod().getMethodName();
         String description = result.getMethod().getDescription() != null ? result.getMethod().getDescription() : "";
         ExtentTestManager.startTest(testName, description);
+        Allure.parameter("env", System.getenv().getOrDefault("ENV", "local"));
     }
 
     @Override
@@ -40,6 +45,7 @@ public class TestExecutionListener implements ITestListener {
         if (throwable != null) {
             ExtentTestManager.logFail(message, throwable);
             Allure.addAttachment("Failure", throwable.toString());
+            Allure.addAttachment("Failure Stacktrace", "text/plain", getStackTrace(throwable));
         } else {
             ExtentTestManager.logFail(message);
         }
@@ -71,7 +77,8 @@ public class TestExecutionListener implements ITestListener {
             responseField.setAccessible(true);
             Object value = responseField.get(instance);
             if (value instanceof Response response) {
-                Allure.addAttachment("Failure Response Body", "application/json", response.asString());
+                Allure.addAttachment("Failure API Snapshot", "application/json", response.asString());
+                Allure.addAttachment("Failure Response Headers", "text/plain", response.getHeaders().toString());
                 ExtentTestManager.logInfo("Attached response body for failed test.");
             }
         } catch (Exception ignored) {
@@ -89,5 +96,11 @@ public class TestExecutionListener implements ITestListener {
             }
         }
         return null;
+    }
+
+    private String getStackTrace(Throwable throwable) {
+        StringWriter writer = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
     }
 }

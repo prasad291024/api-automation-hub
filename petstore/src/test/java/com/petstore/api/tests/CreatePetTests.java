@@ -25,6 +25,7 @@ import static org.testng.Assert.*;
  */
 @Epic("Petstore API Automation")
 @Feature("Pet Management - Create Operations")
+@Owner("Prasad")
 public class CreatePetTests extends BaseTest {
 
     /**
@@ -37,28 +38,20 @@ public class CreatePetTests extends BaseTest {
     @Description("TC_CREATE_001: Verify that a pet can be created with valid complete data")
     @Severity(SeverityLevel.BLOCKER)
     @Story("Create Pet with Valid Data")
+    @Link(name = "Swagger Pet API", url = "https://petstore.swagger.io/")
+    @TmsLink("PET-CRT-001")
     public void testCreatePetWithValidCompleteData(Pet pet) {
         logTestStart("TC_CREATE_001: Create Pet with Valid Complete Data");
+        Allure.parameter("env", System.getenv().getOrDefault("ENV", "local"));
 
-        Response response = given()
-                .spec(requestSpec)
-                .body(pet)
-                .when()
-                .post(Config.PET_ENDPOINT)
-                .then()
-                .spec(responseSpec)
-                .statusCode(Config.STATUS_CODE_OK)
-                .body("id", notNullValue())
-                .body("name", equalTo(pet.getName()))
-                .body("status", equalTo(pet.getStatus()))
-                .extract()
-                .response();
+        Response response = createPet(pet);
 
         // Additional assertions
         Pet createdPet = response.as(Pet.class);
         assertNotNull(createdPet.getId(), "Pet ID should not be null");
         assertEquals(createdPet.getName(), pet.getName(), "Pet name should match");
         assertEquals(createdPet.getStatus(), pet.getStatus(), "Pet status should match");
+        attachResponse("Create Pet Response", response);
 
         logger.info("Pet created successfully with ID: {}", createdPet.getId());
         logTestEnd("TC_CREATE_001");
@@ -76,18 +69,7 @@ public class CreatePetTests extends BaseTest {
     public void testCreatePetWithMinimalRequiredFields(Pet pet) {
         logTestStart("TC_CREATE_002: Create Pet with Minimum Required Fields");
 
-        Response response = given()
-                .spec(requestSpec)
-                .body(pet)
-                .when()
-                .post(Config.PET_ENDPOINT)
-                .then()
-                .spec(responseSpec)
-                .statusCode(Config.STATUS_CODE_OK)
-                .body("id", notNullValue())
-                .body("name", equalTo(pet.getName()))
-                .extract()
-                .response();
+        Response response = createPet(pet);
 
         Pet createdPet = response.as(Pet.class);
         assertNotNull(createdPet.getId(), "Pet ID should be auto-generated");
@@ -200,5 +182,26 @@ public class CreatePetTests extends BaseTest {
 
         logger.info("Pet created with special character name: {}", createdPet.getName());
         logTestEnd("TC_CREATE_005");
+    }
+
+    @Step("Create pet with name: {pet.name}")
+    private Response createPet(Pet pet) {
+        return given()
+                .spec(requestSpec)
+                .body(pet)
+                .when()
+                .post(Config.PET_ENDPOINT)
+                .then()
+                .spec(responseSpec)
+                .statusCode(Config.STATUS_CODE_OK)
+                .body("id", notNullValue())
+                .body("name", equalTo(pet.getName()))
+                .extract()
+                .response();
+    }
+
+    @Step("Attach response payload: {attachmentName}")
+    private void attachResponse(String attachmentName, Response apiResponse) {
+        Allure.addAttachment(attachmentName, "application/json", apiResponse.asString());
     }
 }

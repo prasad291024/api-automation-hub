@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Ultimate API Automation Hub - Master Suite" parallel="tests" thread-count="4">
+
+    <test name="Restful Booker Tests">
+        <classes>
+            <class name="com.prasad_v.tests.crud.TestCreateBooking"/>
+            <class name="com.prasad_v.tests.crud.TestCreateToken"/>
+            <class name="com.prasad_v.tests.crud.TestHealthCheck"/>
+        </classes>
+    </test>
+
+    <test name="Petstore Tests">
+        <classes>
+            <class name="com.petstore.api.tests.CreatePetTests"/>
+            <class name="com.petstore.api.tests.GetPetTests"/>
+        </classes>
+    </test>
+
+    <test name="Reqres-in Tests">
+        <classes>
+            <class name="com.prasad_v.reqres.tests.ReqresTest"/>
+        </classes>
+    </test>
+
+    <test name="Gorest-co-in Tests">
+        <classes>
+            <class name="com.prasad_v.gorest.tests.GorestTest"/>
+        </classes>
+    </test>
+
+    <test name="Dummy-restapi Tests">
+        <classes>
+            <class name="com.prasad_v.dummy.tests.DummyRestTest"/>
+        </classes>
+    </test>
+
+</suite>

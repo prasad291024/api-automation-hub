@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Dummy Rest API Test Suite">
+    <test name="Dummy Rest Module Tests">
+        <classes>
+            <class name="com.prasad_v.dummy.tests.DummyRestTest"/>
+        </classes>
+    </test>
+</suite>

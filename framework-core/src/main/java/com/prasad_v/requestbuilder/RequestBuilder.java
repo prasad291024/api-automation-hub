@@ -468,15 +468,21 @@ public class RequestBuilder {
             }
 
             // Build full URL
-            if (baseUrl == null || baseUrl.isBlank()) {
-                throw new APIException("Base URL is not set for the request");
-            }
-            String url = baseUrl;
-            if (path != null && !path.isEmpty()) {
-                if (!url.endsWith("/") && !path.startsWith("/")) {
-                    url += "/";
+            String url;
+            if (path != null && (path.startsWith("http://") || path.startsWith("https://"))) {
+                // path is already an absolute URL — use it directly
+                url = path;
+            } else {
+                if (baseUrl == null || baseUrl.isBlank()) {
+                    throw new APIException("Base URL is not set for the request");
                 }
-                url += path;
+                url = baseUrl;
+                if (path != null && !path.isEmpty()) {
+                    if (!url.endsWith("/") && !path.startsWith("/")) {
+                        url += "/";
+                    }
+                    url += path;
+                }
             }
 
             // Execute request based on type

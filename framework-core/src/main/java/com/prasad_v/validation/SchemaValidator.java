@@ -6,11 +6,9 @@ import io.restassured.response.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * Utility class for validating API responses against JSON schemas.
@@ -19,7 +17,7 @@ import java.nio.file.Paths;
 public class SchemaValidator {
 
     private static final Logger logger = LogManager.getLogger(SchemaValidator.class);
-    private static final String SCHEMA_BASE_PATH = "src/test/resources/schemas/";
+    private static final String SCHEMA_BASE_PATH = "schemas/";
 
     /**
      * Validates if the response body conforms to the specified JSON schema file.
@@ -31,14 +29,14 @@ public class SchemaValidator {
     public static boolean validateSchema(Response response, String schemaFileName) {
         try {
             String schemaPath = SCHEMA_BASE_PATH + schemaFileName;
-            File schemaFile = new File(schemaPath);
+            InputStream schemaStream = SchemaValidator.class.getClassLoader().getResourceAsStream(schemaPath);
 
-            if (!schemaFile.exists()) {
-                logger.error("Schema file not found: {}", schemaPath);
+            if (schemaStream == null) {
+                logger.error("Schema file not found in classpath: {}", schemaPath);
                 return false;
             }
 
-            response.then().assertThat().body(JsonSchemaValidator.matchesJsonSchema(schemaFile));
+            response.then().assertThat().body(JsonSchemaValidator.matchesJsonSchema(schemaStream));
             logger.info("Schema validation passed against schema: {}", schemaFileName);
             return true;
         } catch (Exception e) {
@@ -57,15 +55,15 @@ public class SchemaValidator {
     public static void assertSchema(Response response, String schemaFileName) {
         try {
             String schemaPath = SCHEMA_BASE_PATH + schemaFileName;
-            File schemaFile = new File(schemaPath);
+            InputStream schemaStream = SchemaValidator.class.getClassLoader().getResourceAsStream(schemaPath);
 
-            if (!schemaFile.exists()) {
-                String errorMessage = "Schema file not found: " + schemaPath;
+            if (schemaStream == null) {
+                String errorMessage = "Schema file not found in classpath: " + schemaPath;
                 logger.error(errorMessage);
                 throw new APIException(errorMessage);
             }
 
-            response.then().assertThat().body(JsonSchemaValidator.matchesJsonSchema(schemaFile));
+            response.then().assertThat().body(JsonSchemaValidator.matchesJsonSchema(schemaStream));
             logger.info("Schema assertion passed against schema: {}", schemaFileName);
         } catch (AssertionError e) {
             String errorMessage = "Schema validation failed: " + e.getMessage();
@@ -132,13 +130,12 @@ public class SchemaValidator {
      */
     public static boolean schemaFileExists(String schemaFileName) {
         String schemaPath = SCHEMA_BASE_PATH + schemaFileName;
-        File schemaFile = new File(schemaPath);
-        boolean exists = schemaFile.exists();
+        boolean exists = SchemaValidator.class.getClassLoader().getResourceAsStream(schemaPath) != null;
 
         if (exists) {
-            logger.debug("Schema file found: {}", schemaPath);
+            logger.debug("Schema file found in classpath: {}", schemaPath);
         } else {
-            logger.warn("Schema file not found: {}", schemaPath);
+            logger.warn("Schema file not found in classpath: {}", schemaPath);
         }
 
         return exists;

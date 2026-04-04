@@ -1,4 +1,7 @@
-.PHONY: test-allure allure-report allure-open allure-serve clean-allure copy-history
+.PHONY: test-all test-allure allure-report allure-open allure-serve clean-allure copy-history
+
+test-all:
+	mvn clean test -DsuiteXmlFile=testng-all.xml
 
 test-allure:
 	mvn clean test

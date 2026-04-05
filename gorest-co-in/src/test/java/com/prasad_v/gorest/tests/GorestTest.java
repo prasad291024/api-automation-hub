@@ -28,6 +28,8 @@ public class GorestTest extends BaseGorestTest {
         gorestService = new GorestService();
     }
 
+    // ── GET ──────────────────────────────────────────────────────────────────
+
     @Test(description = "Verify list users returns 200 and schema is valid")
     @Story("Get Users")
     @Severity(SeverityLevel.NORMAL)
@@ -38,6 +40,8 @@ public class GorestTest extends BaseGorestTest {
         Assert.assertNotNull(response.jsonPath().getList("$"));
         SchemaValidator.assertSchema(response, "user-schema.json");
     }
+
+    // ── CREATE ───────────────────────────────────────────────────────────────
 
     @Test(description = "Verify create user returns 201", dependsOnMethods = "testGetUsers")
     @Story("Create User")
@@ -57,6 +61,8 @@ public class GorestTest extends BaseGorestTest {
         createdUserId = response.jsonPath().getInt("id");
         Assert.assertTrue(createdUserId > 0);
     }
+
+    // ── GET BY ID ────────────────────────────────────────────────────────────
 
     @Test(description = "Verify get user by ID returns 200 with retry for propagation delay",
             dependsOnMethods = "testCreateUser")
@@ -86,6 +92,8 @@ public class GorestTest extends BaseGorestTest {
                 });
     }
 
+    // ── UPDATE ───────────────────────────────────────────────────────────────
+
     @Test(description = "Verify update user returns 200", dependsOnMethods = "testGetUserById")
     @Story("Update User")
     @Severity(SeverityLevel.NORMAL)
@@ -97,6 +105,8 @@ public class GorestTest extends BaseGorestTest {
         Assert.assertEquals(response.jsonPath().getString("name"), "Updated User");
     }
 
+    // ── DELETE ───────────────────────────────────────────────────────────────
+
     @Test(description = "Verify delete user returns 204", dependsOnMethods = "testUpdateUser")
     @Story("Delete User")
     @Severity(SeverityLevel.NORMAL)
@@ -104,5 +114,31 @@ public class GorestTest extends BaseGorestTest {
     public void testDeleteUser() {
         Response response = gorestService.deleteUser(createdUserId);
         Assert.assertEquals(response.getStatusCode(), 204);
+    }
+
+    // ── NEGATIVE ─────────────────────────────────────────────────────────────
+
+    @Test(description = "Verify create user without token returns 401")
+    @Story("Create User")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Attempt to create user without Authorization header and verify 401 Unauthorized")
+    public void testCreateUserWithoutToken() {
+        Map<String, String> payload = Map.of(
+                "name", "Unauthorized User",
+                "email", "unauth_" + System.currentTimeMillis() + "@example.com",
+                "gender", "male",
+                "status", "active"
+        );
+        Response response = gorestService.createUserWithoutAuth(payload);
+        Assert.assertEquals(response.getStatusCode(), 401);
+    }
+
+    @Test(description = "Verify get non-existent user returns 404")
+    @Story("Get Users")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Fetch user with non-existent ID 999999999 and verify 404 Not Found response")
+    public void testGetNonExistentUser() {
+        Response response = gorestService.getUserById(999999999);
+        Assert.assertEquals(response.getStatusCode(), 404);
     }
 }

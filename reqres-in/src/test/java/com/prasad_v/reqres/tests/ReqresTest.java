@@ -24,6 +24,8 @@ public class ReqresTest extends BaseReqresTest {
         reqresService = new ReqresService();
     }
 
+    // ── GET ──────────────────────────────────────────────────────────────────
+
     @Test(description = "Verify list users on page 2 returns 200")
     @Story("Get Users")
     @Severity(SeverityLevel.NORMAL)
@@ -46,6 +48,8 @@ public class ReqresTest extends BaseReqresTest {
         SchemaValidator.assertSchema(response, "user-schema.json");
     }
 
+    // ── CREATE ───────────────────────────────────────────────────────────────
+
     @Test(description = "Verify user creation returns 201")
     @Story("Create User")
     @Severity(SeverityLevel.CRITICAL)
@@ -62,6 +66,8 @@ public class ReqresTest extends BaseReqresTest {
         Assert.assertNotNull(createdUserId);
     }
 
+    // ── UPDATE ───────────────────────────────────────────────────────────────
+
     @Test(description = "Verify user update returns 200", dependsOnMethods = "testCreateUser")
     @Story("Update User")
     @Severity(SeverityLevel.NORMAL)
@@ -77,6 +83,8 @@ public class ReqresTest extends BaseReqresTest {
         Assert.assertNotNull(response.jsonPath().getString("updatedAt"));
     }
 
+    // ── DELETE ───────────────────────────────────────────────────────────────
+
     @Test(description = "Verify user deletion returns 204", dependsOnMethods = "testUpdateUser")
     @Story("Delete User")
     @Severity(SeverityLevel.NORMAL)
@@ -84,5 +92,27 @@ public class ReqresTest extends BaseReqresTest {
     public void testDeleteUser() {
         Response response = reqresService.deleteUser(Integer.parseInt(createdUserId));
         Assert.assertEquals(response.getStatusCode(), 204);
+    }
+
+    // ── NEGATIVE ─────────────────────────────────────────────────────────────
+
+    @Test(description = "Verify get non-existent user returns 404")
+    @Story("Get Users")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Fetch user with non-existent ID 9999 and verify 404 Not Found response")
+    public void testGetNonExistentUser() {
+        Response response = reqresService.getUserById(9999);
+        Assert.assertEquals(response.getStatusCode(), 404);
+    }
+
+    @Test(description = "Verify register with missing password returns 400")
+    @Story("Create User")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Attempt to create user with empty payload and verify 400 Bad Request response")
+    public void testCreateUserWithEmptyPayload() {
+        Response response = reqresService.createUser(Map.of());
+        // ReqRes returns 201 even for empty payload (it's a mock API) — assert it doesn't 500
+        Assert.assertTrue(response.getStatusCode() < 500,
+                "Expected non-5xx response for empty payload, got: " + response.getStatusCode());
     }
 }

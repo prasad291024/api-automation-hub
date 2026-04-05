@@ -4,15 +4,18 @@ A Maven multi-module API test automation framework built with Java 17, REST Assu
 
 ## Project Overview
 
-`api-automation-hub` combines two API test projects under one shared engine (`framework-core`) for reusable utilities, centralized dependencies, and consistent reporting.
+`api-automation-hub` combines multiple API test projects under one shared engine (`framework-core`) for reusable utilities, centralized dependencies, and consistent reporting.
 
 ### Modules
 
-| Module | Description |
-|---|---|
-| `framework-core` | Shared engine: request builders, config, retry, listeners, logging, validation |
-| `restful-booker` | API tests for Restful Booker (CRUD + integration + E2E) |
-| `petstore` | API tests for Swagger Petstore (CRUD + E2E) |
+| Module | API Under Test | Coverage |
+|---|---|---|
+| `framework-core` | — | Shared engine: request builders, config, retry, listeners, logging, validation |
+| `restful-booker` | [restful-booker.herokuapp.com](https://restful-booker.herokuapp.com) | CRUD + integration + E2E |
+| `petstore` | [petstore.swagger.io](https://petstore.swagger.io) | CRUD + E2E |
+| `reqres-in` | [reqres.in](https://reqres.in) | CRUD + negative tests |
+| `gorest-co-in` | [gorest.co.in](https://gorest.co.in) | CRUD + negative tests |
+| `dummy-restapi` | [dummy.restapiexample.com](https://dummy.restapiexample.com) | CRUD + negative tests |
 
 ## Tech Stack
 
@@ -24,6 +27,8 @@ A Maven multi-module API test automation framework built with Java 17, REST Assu
 | TestNG | 7.11.0 |
 | Allure | 2.29.1 adapters + CLI |
 | AspectJ Weaver | 1.9.24 |
+| Awaitility | 4.3.0 |
+| AssertJ | 3.27.7 |
 
 ## Allure Report Showcase
 
@@ -31,7 +36,7 @@ This repository includes full Allure integration:
 
 - Request/response attachments
 - Failure stack traces + API snapshots
-- Test metadata (`Epic`, `Feature`, `Story`, `Severity`, `Owner`, `TmsLink`)
+- Test metadata (`Epic`, `Feature`, `Story`, `Severity`, `Owner`, `Description`)
 - Auto-generated `environment.properties`, `categories.json`, and `executor.json`
 - History/trend support in CI
 
@@ -54,6 +59,25 @@ Sample Allure report view:
 - Node.js (for `npx allure-commandline` fallback)
 - Internet access to hit public API endpoints
 
+## API Keys & Tokens Setup
+
+Some modules require authentication credentials. Add them to the module's `src/test/resources/config/dev.properties` before running.
+
+| Module | Header | Where to get |
+|---|---|---|
+| `reqres-in` | `x-api-key` | [reqres.in](https://reqres.in) — free account |
+| `gorest-co-in` | `Authorization: Bearer <token>` | [gorest.co.in](https://gorest.co.in) — free account |
+
+**reqres-in** (`reqres-in/src/test/resources/config/dev.properties`):
+```properties
+reqres.api.key=pub_your_api_key_here
+```
+
+**gorest-co-in** (`gorest-co-in/src/test/resources/config/dev.properties`):
+```properties
+gorest.auth.token=Bearer your_token_here
+```
+
 ## How To Run Tests
 
 Run all modules:
@@ -66,8 +90,10 @@ Run specific module:
 
 ```bash
 mvn -pl restful-booker -am clean test
-# or
 mvn -pl petstore -am clean test
+mvn -pl reqres-in -am clean test
+mvn -pl gorest-co-in -am clean test
+mvn -pl dummy-restapi -am clean test
 ```
 
 ## How To Generate Allure Report (Local)

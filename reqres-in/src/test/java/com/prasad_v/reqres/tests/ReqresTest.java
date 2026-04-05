@@ -3,6 +3,7 @@ package com.prasad_v.reqres.tests;
 import com.prasad_v.reqres.base.BaseReqresTest;
 import com.prasad_v.reqres.services.ReqresService;
 import com.prasad_v.validation.SchemaValidator;
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -10,6 +11,9 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
+@Epic("ReqRes API")
+@Feature("User Management")
+@Owner("Prasad")
 public class ReqresTest extends BaseReqresTest {
 
     private ReqresService reqresService;
@@ -21,6 +25,9 @@ public class ReqresTest extends BaseReqresTest {
     }
 
     @Test(description = "Verify list users on page 2 returns 200")
+    @Story("Get Users")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Fetch paginated user list from page 2 and verify response structure")
     public void testGetUsers() {
         Response response = reqresService.getUsers(2);
         Assert.assertEquals(response.getStatusCode(), 200);
@@ -29,6 +36,9 @@ public class ReqresTest extends BaseReqresTest {
     }
 
     @Test(description = "Verify single user retrieval and schema validation")
+    @Story("Get Users")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Fetch user by ID 2 and validate response against JSON schema")
     public void testGetSingleUser() {
         Response response = reqresService.getUserById(2);
         Assert.assertEquals(response.getStatusCode(), 200);
@@ -37,6 +47,9 @@ public class ReqresTest extends BaseReqresTest {
     }
 
     @Test(description = "Verify user creation returns 201")
+    @Story("Create User")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Create a new user and verify 201 response with returned ID")
     public void testCreateUser() {
         Map<String, String> payload = Map.of(
                 "name", "morpheus",
@@ -50,6 +63,9 @@ public class ReqresTest extends BaseReqresTest {
     }
 
     @Test(description = "Verify user update returns 200", dependsOnMethods = "testCreateUser")
+    @Story("Update User")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Update job title of created user and verify updatedAt timestamp is returned")
     public void testUpdateUser() {
         Map<String, String> payload = Map.of(
                 "name", "morpheus",
@@ -62,6 +78,9 @@ public class ReqresTest extends BaseReqresTest {
     }
 
     @Test(description = "Verify user deletion returns 204", dependsOnMethods = "testUpdateUser")
+    @Story("Delete User")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Delete the created user and verify 204 No Content response")
     public void testDeleteUser() {
         Response response = reqresService.deleteUser(Integer.parseInt(createdUserId));
         Assert.assertEquals(response.getStatusCode(), 204);

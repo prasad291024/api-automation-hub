@@ -3,6 +3,7 @@ package com.prasad_v.gorest.tests;
 import com.prasad_v.gorest.base.BaseGorestTest;
 import com.prasad_v.gorest.services.GorestService;
 import com.prasad_v.validation.SchemaValidator;
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import org.awaitility.Awaitility;
 import org.testng.Assert;
@@ -13,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Epic("GoRest API")
+@Feature("User Management")
+@Owner("Prasad")
 public class GorestTest extends BaseGorestTest {
 
     private GorestService gorestService;
@@ -25,6 +29,9 @@ public class GorestTest extends BaseGorestTest {
     }
 
     @Test(description = "Verify list users returns 200 and schema is valid")
+    @Story("Get Users")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Fetch all users and validate response against JSON schema")
     public void testGetUsers() {
         Response response = gorestService.getUsers();
         Assert.assertEquals(response.getStatusCode(), 200);
@@ -33,6 +40,9 @@ public class GorestTest extends BaseGorestTest {
     }
 
     @Test(description = "Verify create user returns 201", dependsOnMethods = "testGetUsers")
+    @Story("Create User")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Create a new user with Bearer token auth and verify 201 response with ID")
     public void testCreateUser() {
         createdUserEmail = "testuser_" + System.currentTimeMillis() + "@example.com";
         Map<String, String> payload = Map.of(
@@ -50,9 +60,10 @@ public class GorestTest extends BaseGorestTest {
 
     @Test(description = "Verify get user by ID returns 200 with retry for propagation delay",
             dependsOnMethods = "testCreateUser")
+    @Story("Get Users")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Fetch created user by ID with Awaitility retry; falls back to email filter if 404")
     public void testGetUserById() {
-        // GoRest may return 404 immediately after creation due to propagation delay.
-        // Retry for up to 5 seconds until 200 is returned.
         Awaitility.await()
                 .atMost(5, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
@@ -64,7 +75,6 @@ public class GorestTest extends BaseGorestTest {
                             "Unexpected status: " + status);
 
                     if (status == 404) {
-                        // Fallback: verify via email filter — confirms the user exists in the system
                         Response listResponse = gorestService.getUsersByEmail(createdUserEmail);
                         Assert.assertEquals(listResponse.getStatusCode(), 200);
                         List<Integer> ids = listResponse.jsonPath().getList("id");
@@ -77,6 +87,9 @@ public class GorestTest extends BaseGorestTest {
     }
 
     @Test(description = "Verify update user returns 200", dependsOnMethods = "testGetUserById")
+    @Story("Update User")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Update name and status of created user and verify 200 response")
     public void testUpdateUser() {
         Map<String, String> payload = Map.of("name", "Updated User", "status", "inactive");
         Response response = gorestService.updateUser(createdUserId, payload);
@@ -85,6 +98,9 @@ public class GorestTest extends BaseGorestTest {
     }
 
     @Test(description = "Verify delete user returns 204", dependsOnMethods = "testUpdateUser")
+    @Story("Delete User")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Delete the created user and verify 204 No Content response")
     public void testDeleteUser() {
         Response response = gorestService.deleteUser(createdUserId);
         Assert.assertEquals(response.getStatusCode(), 204);

@@ -1,14 +1,20 @@
+### Maven ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.kotlin
+
+### Logs ###
+**/logs/
+*.log
+
+### Test Output ###
+**/test-output/
+**/allure-results/
+**/allure-report/
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -37,8 +43,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
-petstore/logs/
-allure-results/
-allure-report/
-# Keep history only if you intentionally version it:
-#!allure-results/history/
+
+### Kotlin ###
+.kotlin

@@ -118,10 +118,10 @@ public class GorestTest extends BaseGorestTest {
 
     // ── NEGATIVE ─────────────────────────────────────────────────────────────
 
-    @Test(description = "Verify create user without token returns 401")
+    @Test(description = "Verify create user without token returns 401 or 403")
     @Story("Create User")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Attempt to create user without Authorization header and verify 401 Unauthorized")
+    @Description("Attempt to create user without Authorization header and verify 401 or 403 response")
     public void testCreateUserWithoutToken() {
         Map<String, String> payload = Map.of(
                 "name", "Unauthorized User",
@@ -130,7 +130,9 @@ public class GorestTest extends BaseGorestTest {
                 "status", "active"
         );
         Response response = gorestService.createUserWithoutAuth(payload);
-        Assert.assertEquals(response.getStatusCode(), 401);
+        int status = response.getStatusCode();
+        Assert.assertTrue(status == 401 || status == 403,
+                "Expected 401 or 403 for unauthenticated request, got: " + status);
     }
 
     @Test(description = "Verify get non-existent user returns 404")

@@ -31,7 +31,7 @@ public class DummyRestTest extends BaseDummyTest {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Fetch all employees, verify success status and validate response against JSON schema")
     public void testGetAllEmployees() {
-        Response response = dummyRestService.getAllEmployees();
+        Response response = executeWithRetry(() -> dummyRestService.getAllEmployees());
         Assert.assertEquals(response.getStatusCode(), 200);
         Assert.assertEquals(response.jsonPath().getString("status"), "success");
         SchemaValidator.assertSchema(response, "employees-schema.json");
@@ -44,7 +44,7 @@ public class DummyRestTest extends BaseDummyTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Fetch employee by ID 1 and verify name and salary fields are present")
     public void testGetEmployeeById() {
-        Response response = dummyRestService.getEmployeeById(1);
+        Response response = executeWithRetry(() -> dummyRestService.getEmployeeById(1));
         Assert.assertEquals(response.getStatusCode(), 200);
         Assert.assertEquals(response.jsonPath().getString("status"), "success");
         Assert.assertNotNull(response.jsonPath().get("data.employee_name"));
@@ -63,7 +63,7 @@ public class DummyRestTest extends BaseDummyTest {
                 "salary", "50000",
                 "age", "30"
         );
-        Response response = dummyRestService.createEmployee(payload);
+        Response response = executeWithRetry(() -> dummyRestService.createEmployee(payload));
         Assert.assertEquals(response.getStatusCode(), 200);
         Assert.assertEquals(response.jsonPath().getString("status"), "success");
         Assert.assertEquals(response.jsonPath().getString("data.name"), "John Doe");
@@ -83,7 +83,7 @@ public class DummyRestTest extends BaseDummyTest {
                 "salary", "60000",
                 "age", "31"
         );
-        Response response = dummyRestService.updateEmployee(Integer.parseInt(createdEmployeeId), payload);
+        Response response = executeWithRetry(() -> dummyRestService.updateEmployee(Integer.parseInt(createdEmployeeId), payload));
         Assert.assertEquals(response.getStatusCode(), 200);
         Assert.assertEquals(response.jsonPath().getString("status"), "success");
         Assert.assertEquals(response.jsonPath().getString("data.name"), "John Doe Updated");
@@ -96,7 +96,7 @@ public class DummyRestTest extends BaseDummyTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Delete the created employee and verify success status in response")
     public void testDeleteEmployee() {
-        Response response = dummyRestService.deleteEmployee(Integer.parseInt(createdEmployeeId));
+        Response response = executeWithRetry(() -> dummyRestService.deleteEmployee(Integer.parseInt(createdEmployeeId)));
         Assert.assertEquals(response.getStatusCode(), 200);
         Assert.assertEquals(response.jsonPath().getString("status"), "success");
     }
@@ -108,7 +108,7 @@ public class DummyRestTest extends BaseDummyTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Fetch employee with non-existent ID and verify 404 response")
     public void testGetEmployeeByInvalidId() {
-        Response response = dummyRestService.getEmployeeById(999999);
+        Response response = executeWithRetry(() -> dummyRestService.getEmployeeById(999999));
         Assert.assertEquals(response.getStatusCode(), 404);
     }
 }

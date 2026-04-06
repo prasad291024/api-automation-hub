@@ -35,11 +35,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Inject API credentials
-        run: |
-          echo "reqres.api.key=${{ secrets.REQRES_API_KEY }}" >> reqres-in/src/test/resources/config/dev.properties
-          echo "gorest.auth.token=Bearer ${{ secrets.GOREST_AUTH_TOKEN }}" >> gorest-co-in/src/test/resources/config/dev.properties
-
       - name: Run tests
         run: mvn -B clean test
 

@@ -2,15 +2,18 @@ package com.prasad_v.dummy.base;
 
 import com.prasad_v.config.EnvironmentManager;
 import io.restassured.response.Response;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionTimeoutException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class BaseDummyTest {
+
+    // Dummy REST API is very aggressive with rate limiting in CI —
+    // use longer delays and exponential backoff
+    private static final int  MAX_RETRIES       = 8;
+    private static final long INITIAL_BACKOFF_MS = 5000;  // 5s base
+    private static final long MAX_BACKOFF_MS     = 60000; // 60s cap
 
     @BeforeSuite(alwaysRun = true)
     public void initEnvironment() {
@@ -19,29 +22,33 @@ public class BaseDummyTest {
 
     @BeforeMethod(alwaysRun = true)
     public void throttle() throws InterruptedException {
-        // Dummy REST API enforces ~1 req/sec rate limit — wait between each test
-        Thread.sleep(2000);
+        // Wait 5s before every test to respect the API rate limit in CI
+        Thread.sleep(5000);
     }
 
     /**
-     * Executes a request and retries up to 3 times with 5s backoff if 429 is returned.
-     * If all retries are exhausted, returns the last response (429) for test assertions.
+     * Retries the request up to MAX_RETRIES times using exponential backoff
+     * whenever a 429 Too Many Requests response is received.
      */
     protected Response executeWithRetry(Supplier<Response> request) {
-        final int[] attempts = {0};
-        final Response[] result = {null};
-        try {
-            Awaitility.await()
-                    .atMost(30, TimeUnit.SECONDS)
-                    .pollInterval(5, TimeUnit.SECONDS)
-                    .until(() -> {
-                        attempts[0]++;
-                        result[0] = request.get();
-                        return result[0].getStatusCode() != 429;
-                    });
-        } catch (ConditionTimeoutException e) {
-            // All retries exhausted — return last response for assertion
+        Response response = null;
+        long backoff = INITIAL_BACKOFF_MS;
+
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            response = request.get();
+            if (response.getStatusCode() != 429) {
+                return response;
+            }
+            try {
+                System.out.printf("[DummyAPI] 429 received — attempt %d/%d, waiting %ds%n",
+                        attempt, MAX_RETRIES, backoff / 1000);
+                Thread.sleep(backoff);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            backoff = Math.min(backoff * 2, MAX_BACKOFF_MS); // exponential backoff with cap
         }
-        return result[0];
+        return response; // return last response for assertion
     }
 }

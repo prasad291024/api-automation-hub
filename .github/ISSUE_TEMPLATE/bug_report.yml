@@ -1,0 +1,62 @@
+name: Bug Report
+description: Report a test failure or framework issue
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Bug Report"
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected Module
+      options:
+        - framework-core
+        - restful-booker
+        - petstore
+        - reqres-in
+        - gorest-co-in
+        - dummy-restapi
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behaviour
+      placeholder: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behaviour
+      placeholder: What actually happened? Paste error/stack trace here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Run `mvn -pl reqres-in -am clean test`
+        2. See failure in testGetUsers
+    validations:
+      required: true
+
+  - type: input
+    id: ci-run
+    attributes:
+      label: CI Run URL
+      placeholder: https://github.com/prasad291024/api-automation-hub/actions/runs/...

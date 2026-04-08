@@ -1,0 +1,76 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    name: Run All Modules
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ restful-booker, petstore, reqres-in, gorest-co-in, dummy-restapi ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run ${{ matrix.module }} tests
+        run: mvn -B -pl ${{ matrix.module }} -am clean test
+
+      - name: Upload allure results — ${{ matrix.module }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.module }}
+          path: allure-results
+          if-no-files-found: warn
+
+      - name: Comment test failure on PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `❌ **Tests failed in module: \`${{ matrix.module }}\`**. Please fix before merging.`
+            })
+
+  merge-results:
+    name: Merge Allure Results
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Download all allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          merge-multiple: true
+          path: allure-results
+
+      - name: Upload merged allure results
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+          overwrite: true

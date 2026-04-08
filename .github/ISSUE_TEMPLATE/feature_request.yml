@@ -1,0 +1,54 @@
+name: New Module / Feature Request
+description: Request a new API module or framework feature
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Feature Request"
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - New API module
+        - New framework feature
+        - Test coverage improvement
+        - CI/CD improvement
+    validations:
+      required: true
+
+  - type: input
+    id: api
+    attributes:
+      label: API / Feature Name
+      placeholder: e.g. jsonplaceholder.typicode.com
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: What should be added and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: Endpoints / Scope
+      placeholder: |
+        GET /posts
+        POST /posts
+        PUT /posts/{id}
+        DELETE /posts/{id}
+
+  - type: dropdown
+    id: auth
+    attributes:
+      label: Requires Authentication?
+      options:
+        - "No"
+        - "Yes - API Key"
+        - "Yes - Bearer Token"
+        - "Yes - Basic Auth"

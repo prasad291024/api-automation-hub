@@ -1,0 +1,15 @@
+# Global owner — reviews all PRs by default
+* @prasad291024
+
+# Framework engine — any change here needs careful review
+/framework-core/ @prasad291024
+
+# Test modules
+/restful-booker/  @prasad291024
+/petstore/        @prasad291024
+/reqres-in/       @prasad291024
+/gorest-co-in/    @prasad291024
+/dummy-restapi/   @prasad291024
+
+# CI/CD workflows — critical, always reviewed
+/.github/         @prasad291024

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!--
+        Suppress false positives for test-only dependencies that are not
+        part of the production runtime classpath.
+    -->
+
+    <!-- MockServer netty - test scope only, not exposed in production -->
+    <suppress>
+        <notes>MockServer is test-scoped and not part of production runtime</notes>
+        <gav regex="true">org\.mock-server:mockserver-netty:.*</gav>
+        <cvssBelow>9</cvssBelow>
+    </suppress>
+
+    <!-- JavaFaker - test data generation, test scope only -->
+    <suppress>
+        <notes>JavaFaker is used only for test data generation</notes>
+        <gav regex="true">com\.github\.javafaker:javafaker:.*</gav>
+        <cvssBelow>9</cvssBelow>
+    </suppress>
+
+</suppressions>

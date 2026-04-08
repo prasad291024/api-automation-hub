@@ -1,7 +1,10 @@
-name: Allure Report (Manual)
+name: Post-checks
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: [ "Tests" ]
+    branches: [ "main", "master" ]
+    types: [ completed ]
 
 permissions:
   contents: read
@@ -13,36 +16,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test-and-report:
+  report:
+    name: Generate & Deploy Allure Report
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
-          cache: maven
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Run tests
-        run: mvn -B clean test
-
-      - name: Upload allure-results artifact
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Download merged allure results
+        uses: actions/download-artifact@v4
         with:
           name: allure-results
           path: allure-results
-          if-no-files-found: error
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Checkout previous gh-pages for history
+      - name: Checkout gh-pages for history
         uses: actions/checkout@v4
         continue-on-error: true
         with:
@@ -64,13 +63,6 @@ jobs:
         with:
           path: allure-report
 
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: test-and-report
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

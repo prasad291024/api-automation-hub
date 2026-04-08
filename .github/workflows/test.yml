@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: read
 
 jobs:
   test:
@@ -18,7 +19,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module: [ restful-booker, petstore, reqres-in, gorest-co-in, dummy-restapi ]
+        include:
+          - module: restful-booker
+          - module: petstore
+          - module: reqres-in
+          - module: gorest-co-in
+          - module: dummy-restapi
 
     steps:
       - name: Checkout code
@@ -33,14 +39,20 @@ jobs:
 
       - name: Run ${{ matrix.module }} tests
         run: mvn -B -pl ${{ matrix.module }} -am clean test
+        continue-on-error: true
+        id: run-tests
 
       - name: Upload allure results — ${{ matrix.module }}
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.module }}
-          path: allure-results
+          path: allure-results/
           if-no-files-found: warn
+
+      - name: Fail job if tests failed
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1
 
       - name: Comment test failure on PR
         if: failure() && github.event_name == 'pull_request'
@@ -65,12 +77,12 @@ jobs:
         with:
           pattern: allure-results-*
           merge-multiple: true
-          path: allure-results
+          path: allure-results/
 
       - name: Upload merged allure results
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
-          path: allure-results
+          path: allure-results/
           if-no-files-found: warn
           overwrite: true

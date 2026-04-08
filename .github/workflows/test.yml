@@ -13,18 +13,37 @@ permissions:
   actions: read
 
 jobs:
-  test:
-    name: Run All Modules
+  install-core:
+    name: Install framework-core
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install framework-core to local repo
+        run: mvn -B -pl framework-core clean install -DskipTests
+
+      - name: Cache framework-core jar
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/com/prasad_v
+          key: framework-core-${{ github.sha }}
+
+  test:
+    name: Test — ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    needs: install-core
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - module: restful-booker
-          - module: petstore
-          - module: reqres-in
-          - module: gorest-co-in
-          - module: dummy-restapi
+        module: [ restful-booker, petstore, reqres-in, gorest-co-in, dummy-restapi ]
 
     steps:
       - name: Checkout code
@@ -37,8 +56,14 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Restore framework-core cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/com/prasad_v
+          key: framework-core-${{ github.sha }}
+
       - name: Run ${{ matrix.module }} tests
-        run: mvn -B -pl ${{ matrix.module }} -am clean test
+        run: mvn -B -pl ${{ matrix.module }} clean test
         continue-on-error: true
         id: run-tests
 

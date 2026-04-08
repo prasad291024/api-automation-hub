@@ -12,6 +12,11 @@ target/
 **/test-output/
 **/allure-results/
 **/allure-report/
+**/allure-history/
+
+### Local Allure CLI ###
+.allure/
+**/.allure/
 
 ### IntelliJ IDEA ###
 .idea/
@@ -40,6 +45,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Local AI Assistant Files ###
+CLAUDE.md
 
 ### Mac OS ###
 .DS_Store

@@ -5,6 +5,11 @@ on:
     workflows: [ "Tests" ]
     branches: [ "main", "master" ]
     types: [ completed ]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Tests workflow run ID to pull allure-results from'
+        required: false
 
 permissions:
   contents: read

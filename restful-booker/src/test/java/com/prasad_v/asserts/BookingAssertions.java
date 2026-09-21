@@ -80,4 +80,9 @@ public class BookingAssertions {
                 .as("Checkout date should match")
                 .isEqualTo(expected.getCheckout());
     }
+
+    @Step("Verify response conforms to JSON schema: {schemaFileName}")
+    public static void verifySchema(Response response, String schemaFileName) {
+        com.prasad_v.validation.SchemaValidator.assertSchema(response, schemaFileName);
+    }
 }

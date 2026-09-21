@@ -1,69 +1,62 @@
 package com.prasad_v.tests.integration;
 
-/*
-    Create Booking → Update it → Try to Delete it
-    Steps:
-        ✔ Create a new booking and store bookingid.
-        ✔ Update the booking using PUT.
-        ✔ Delete the updated booking using DELETE.
-        ✔ Verify deletion was successful (GET /booking/{id} should return 404).
-*/
-
+import com.prasad_v.asserts.BookingAssertions;
+import com.prasad_v.builders.BookingBuilder;
+import com.prasad_v.pojos.Booking;
+import com.prasad_v.pojos.BookingResponse;
 import com.prasad_v.tests.base.BaseTest;
-import io.restassured.http.ContentType;
+import com.prasad_v.utils.DataGenerator;
+import io.qameta.allure.Description;
+import io.qameta.allure.Owner;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import static io.restassured.RestAssured.*;
 
+/**
+ * Assignment 3: Create Booking → Update it → Try to Delete it.
+ * Validates full lifecycle using BookingClient and assertions.
+ */
 public class E2ETest_Assignment3 extends BaseTest {
 
-    public int createBooking() {
-        String requestBody = "{ \"firstname\": \"John\", \"lastname\": \"Doe\", \"totalprice\": 150, \"depositpaid\": true, \"bookingdates\": { \"checkin\": \"2025-03-25\", \"checkout\": \"2025-03-30\" }, \"additionalneeds\": \"Breakfast\" }";
-
-        Response response = given()
-                .spec(requestSpecification)
-                .basePath("/booking")
-                .contentType(ContentType.JSON)
-                .body(requestBody)
-                .when()
-                .post();
-
-        response.then().log().all();
-        Assert.assertEquals(response.statusCode(), 200);
-
-        return response.jsonPath().getInt("bookingid");
-    }
-
-    @Test
+    @Test(groups = {"reg", "e2e"}, priority = 3)
+    @Owner("Prasad")
+    @Description("Assignment 3: Create Booking -> Update it -> Delete it -> Verify 404")
     public void testCreateUpdateDeleteBooking() {
-        int bookingId = createBooking();
-        String token = getToken();
+        // Step 1: Create booking
+        Booking createPayload = new BookingBuilder()
+                .withFirstname(DataGenerator.generateRandomFirstName())
+                .withLastname(DataGenerator.generateRandomLastName())
+                .withTotalprice(DataGenerator.generatePrice(150, 350))
+                .withDepositpaid(true)
+                .withCheckin(DataGenerator.generateFutureDate(2))
+                .withCheckout(DataGenerator.generateFutureDate(6))
+                .withAdditionalneeds("Breakfast")
+                .build();
 
-        // Update booking
-        String updateRequestBody = "{ \"firstname\": \"Michael\", \"lastname\": \"Scott\", \"totalprice\": 200, \"depositpaid\": false, \"bookingdates\": { \"checkin\": \"2025-04-01\", \"checkout\": \"2025-04-05\" }, \"additionalneeds\": \"Lunch\" }";
+        BookingResponse createResponse = bookingClient.createBooking(createPayload);
+        int bookingId = createResponse.getBookingid();
+        BookingAssertions.verifyBookingIdValid(bookingId);
 
-        given()
-                .spec(requestSpecification)
-                .basePath("/booking/" + bookingId)
-                .header("Cookie", "token=" + token)
-                .contentType(ContentType.JSON)
-                .body(updateRequestBody)
-                .when()
-                .put()
-                .then()
-                .log().all()
-                .statusCode(200);
+        // Step 2: Update booking (token auto-managed by client)
+        Booking updatePayload = new BookingBuilder()
+                .withFirstname(createPayload.getFirstname())
+                .withLastname("UpdatedAssignment3")
+                .withTotalprice(createPayload.getTotalprice() + 50)
+                .withDepositpaid(false)
+                .withCheckin(createPayload.getBookingdates().getCheckin())
+                .withCheckout(createPayload.getBookingdates().getCheckout())
+                .withAdditionalneeds("Lunch & Dinner")
+                .build();
 
-        // Delete booking
-        given()
-                .spec(requestSpecification)
-                .basePath("/booking/" + bookingId)
-                .header("Cookie", "token=" + token)
-                .when()
-                .delete()
-                .then()
-                .log().all()
-                .statusCode(201);
+        Booking updated = bookingClient.updateBooking(bookingId, updatePayload);
+        BookingAssertions.verifyBookingDetails(updated, updatePayload);
+
+        // Step 3: Delete booking
+        boolean isDeleted = bookingClient.deleteBooking(bookingId);
+        Assert.assertTrue(isDeleted, "Booking should be deleted successfully");
+
+        // Step 4: Verify deleted booking returns 404
+        Response getResponse = bookingService.getBookingById(bookingId);
+        BookingAssertions.verifyStatusCode(getResponse, 404);
     }
 }

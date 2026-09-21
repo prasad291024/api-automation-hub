@@ -97,6 +97,25 @@ public class ConfigurationManager {
     }
 
     /**
+     * Validate that all specified property keys exist and are non-empty
+     *
+     * @param requiredKeys Varargs array of property keys that must be present
+     * @throws ConfigurationException if one or more required properties are missing or empty
+     */
+    public void validateRequiredProperties(String... requiredKeys) {
+        java.util.List<String> missingKeys = new java.util.ArrayList<>();
+        for (String key : requiredKeys) {
+            String val = getProperty(key);
+            if (val == null || val.trim().isEmpty()) {
+                missingKeys.add(key);
+            }
+        }
+        if (!missingKeys.isEmpty()) {
+            throw new ConfigurationException("Missing required configuration properties: " + String.join(", ", missingKeys));
+        }
+    }
+
+    /**
      * Get a property value as string with default value if not found
      *
      * @param key Property key

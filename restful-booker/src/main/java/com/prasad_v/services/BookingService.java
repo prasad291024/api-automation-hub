@@ -29,4 +29,16 @@ public class BookingService extends BaseApiService {
     public Response ping() {
         return execute(RequestType.GET, APIConstants.PING_URL, null, null);
     }
+
+    public Response getAllBookings() {
+        return execute(RequestType.GET, APIConstants.CREATE_UPDATE_BOOKING_URL, null, null);
+    }
+
+    public Response deleteBookingWithoutToken(int bookingId) {
+        return execute(RequestType.DELETE, APIConstants.CREATE_UPDATE_BOOKING_URL + "/" + bookingId, null, null);
+    }
+
+    public Response updateBookingWithoutToken(int bookingId, Object payload) {
+        return execute(RequestType.PUT, APIConstants.CREATE_UPDATE_BOOKING_URL + "/" + bookingId, null, payload);
+    }
 }

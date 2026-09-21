@@ -6,6 +6,8 @@ import com.prasad_v.config.EnvironmentManager;
 import com.prasad_v.asserts.AssertActions;
 import com.prasad_v.interceptors.RequestResponseInterceptor;
 import com.prasad_v.modules.PayloadManager;
+import com.prasad_v.clients.AuthClient;
+import com.prasad_v.clients.BookingClient;
 import com.prasad_v.services.AuthService;
 import com.prasad_v.services.BookingService;
 import com.prasad_v.utils.DataGenerator;
@@ -34,6 +36,10 @@ public class BaseTest {
     protected BookingService bookingService;
     protected AuthService authService;
 
+    // Client layer abstractions
+    protected BookingClient bookingClient;
+    protected AuthClient authClient;
+
     // Legacy fields maintained for backward compatibility
     @Deprecated
     public RequestSpecification requestSpecification;
@@ -59,6 +65,10 @@ public class BaseTest {
         // Initialize service layer components
         bookingService = new BookingService();
         authService = new AuthService();
+
+        // Initialize client layer components
+        authClient = new AuthClient(authService);
+        bookingClient = new BookingClient(bookingService, authClient);
 
         // Legacy RequestSpecification setup
         String baseUrl = config.getProperty("api.base.url", APIConstants.BASE_URL);
@@ -95,5 +105,13 @@ public class BaseTest {
 
     public DataGenerator getDataGenerator() {
         return dataGenerator;
+    }
+
+    public BookingClient getBookingClient() {
+        return bookingClient;
+    }
+
+    public AuthClient getAuthClient() {
+        return authClient;
     }
 }

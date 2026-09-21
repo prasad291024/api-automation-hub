@@ -23,6 +23,13 @@
         </classes>
     </test>
 
+    <!-- Client Layer Tests -->
+    <test verbose="2" preserve-order="true" name="Client Layer Tests">
+        <classes>
+            <class name="com.prasad_v.tests.clients.BookingClientTests"/>
+        </classes>
+    </test>
+
     <!-- Assignment tests -->
     <test verbose="2" preserve-order="true" name="Assignment Tests">
         <classes>

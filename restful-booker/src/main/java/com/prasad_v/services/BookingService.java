@@ -25,4 +25,8 @@ public class BookingService extends BaseApiService {
         Map<String, String> headers = Map.of("Cookie", "token=" + token);
         return execute(RequestType.DELETE, APIConstants.CREATE_UPDATE_BOOKING_URL + "/" + bookingId, headers, null);
     }
+
+    public Response ping() {
+        return execute(RequestType.GET, APIConstants.PING_URL, null, null);
+    }
 }

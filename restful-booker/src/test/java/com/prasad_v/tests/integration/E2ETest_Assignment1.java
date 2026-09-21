@@ -1,66 +1,48 @@
 package com.prasad_v.tests.integration;
 
-/*
-    Create Booking → Delete it → Verify it's deleted
-    Steps:
-        ✔ Create a booking and get bookingid.
-        ✔ Delete that booking using the DELETE request.
-        ✔ Verify that the booking is no longer accessible (GET /booking/{id} should return 404).
-*/
-
+import com.prasad_v.asserts.BookingAssertions;
+import com.prasad_v.builders.BookingBuilder;
+import com.prasad_v.pojos.Booking;
+import com.prasad_v.pojos.BookingResponse;
 import com.prasad_v.tests.base.BaseTest;
-import io.restassured.http.ContentType;
+import com.prasad_v.utils.DataGenerator;
+import io.qameta.allure.Description;
+import io.qameta.allure.Owner;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import static io.restassured.RestAssured.*;
 
+/**
+ * Assignment 1: Create Booking → Delete it → Verify it's deleted.
+ * Uses BookingClient for high-level operations and BookingAssertions for verification.
+ */
 public class E2ETest_Assignment1 extends BaseTest {
 
-    public int createBooking() {
-        String requestBody = "{ \"firstname\": \"John\", \"lastname\": \"Doe\", \"totalprice\": 150, \"depositpaid\": true, \"bookingdates\": { \"checkin\": \"2025-03-25\", \"checkout\": \"2025-03-30\" }, \"additionalneeds\": \"Breakfast\" }";
-
-        Response response = given()
-                .spec(requestSpecification)
-                .basePath("/booking")
-                .contentType(ContentType.JSON)
-                .body(requestBody)
-                .when()
-                .post();
-
-        response.then().log().all();
-        Assert.assertEquals(response.statusCode(), 200);
-
-        return response.jsonPath().getInt("bookingid");
-    }
-
-    public void deleteBooking(int bookingId, String token) {
-        given()
-                .spec(requestSpecification)
-                .basePath("/booking/" + bookingId)
-                .header("Cookie", "token=" + token)
-                .when()
-                .delete()
-                .then()
-                .log().all()
-                .statusCode(201);
-    }
-
-    @Test
+    @Test(groups = {"reg", "e2e"}, priority = 1)
+    @Owner("Prasad")
+    @Description("Assignment 1: Create Booking -> Delete it -> Verify it's deleted (404)")
     public void testCreateDeleteVerifyBooking() {
-        int bookingId = createBooking();
-        String token = getToken();
+        // Step 1: Create booking using client with dynamic data
+        Booking payload = new BookingBuilder()
+                .withFirstname(DataGenerator.generateRandomFirstName())
+                .withLastname(DataGenerator.generateRandomLastName())
+                .withTotalprice(DataGenerator.generatePrice(100, 300))
+                .withDepositpaid(true)
+                .withCheckin(DataGenerator.generateFutureDate(1))
+                .withCheckout(DataGenerator.generateFutureDate(4))
+                .withAdditionalneeds("Breakfast")
+                .build();
 
-        deleteBooking(bookingId, token);
+        BookingResponse response = bookingClient.createBooking(payload);
+        int bookingId = response.getBookingid();
+        BookingAssertions.verifyBookingIdValid(bookingId);
 
-        // Verify the booking is deleted (should return 404)
-        given()
-                .spec(requestSpecification)
-                .basePath("/booking/" + bookingId)
-                .when()
-                .get()
-                .then()
-                .log().all()
-                .statusCode(404);
+        // Step 2: Delete booking using client (automatic token injection)
+        boolean isDeleted = bookingClient.deleteBooking(bookingId);
+        Assert.assertTrue(isDeleted, "Booking should be deleted successfully (HTTP 201)");
+
+        // Step 3: Verify the booking is no longer accessible (404 Not Found)
+        Response getResponse = bookingService.getBookingById(bookingId);
+        BookingAssertions.verifyStatusCode(getResponse, 404);
     }
 }

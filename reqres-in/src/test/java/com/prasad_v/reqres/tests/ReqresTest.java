@@ -1,7 +1,10 @@
 package com.prasad_v.reqres.tests;
 
+import com.prasad_v.reqres.asserts.ReqresAssertions;
 import com.prasad_v.reqres.base.BaseReqresTest;
-import com.prasad_v.reqres.services.ReqresService;
+import com.prasad_v.reqres.clients.ReqresClient;
+import com.prasad_v.reqres.models.ReqresUser;
+import com.prasad_v.utils.DataGenerator;
 import com.prasad_v.validation.SchemaValidator;
 import io.qameta.allure.*;
 import io.restassured.response.Response;
@@ -16,12 +19,18 @@ import java.util.Map;
 @Owner("Prasad")
 public class ReqresTest extends BaseReqresTest {
 
-    private ReqresService reqresService;
+    private ReqresClient reqresClient;
     private String createdUserId;
+    private String randomUserName;
+    private String initialJob;
+    private String updatedJob;
 
     @BeforeClass
     public void setup() {
-        reqresService = new ReqresService();
+        reqresClient = new ReqresClient();
+        randomUserName = DataGenerator.generateRandomFirstName();
+        initialJob = "Engineer_" + DataGenerator.generateAlphanumeric(4);
+        updatedJob = "Lead_" + DataGenerator.generateAlphanumeric(4);
     }
 
     // ── GET ──────────────────────────────────────────────────────────────────
@@ -31,8 +40,8 @@ public class ReqresTest extends BaseReqresTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Fetch paginated user list from page 2 and verify response structure")
     public void testGetUsers() {
-        Response response = reqresService.getUsers(2);
-        Assert.assertEquals(response.getStatusCode(), 200);
+        Response response = reqresClient.getUsersResponse(2);
+        ReqresAssertions.assertStatusCode(response, 200);
         Assert.assertNotNull(response.jsonPath().get("data"));
         Assert.assertEquals(response.jsonPath().getInt("page"), 2);
     }
@@ -42,8 +51,8 @@ public class ReqresTest extends BaseReqresTest {
     @Severity(SeverityLevel.CRITICAL)
     @Description("Fetch user by ID 2 and validate response against JSON schema")
     public void testGetSingleUser() {
-        Response response = reqresService.getUserById(2);
-        Assert.assertEquals(response.getStatusCode(), 200);
+        Response response = reqresClient.getUserResponse(2);
+        ReqresAssertions.assertStatusCode(response, 200);
         Assert.assertEquals(response.jsonPath().getInt("data.id"), 2);
         SchemaValidator.assertSchema(response, "user-schema.json");
     }
@@ -53,17 +62,16 @@ public class ReqresTest extends BaseReqresTest {
     @Test(description = "Verify user creation returns 201")
     @Story("Create User")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Create a new user and verify 201 response with returned ID")
+    @Description("Create a new user and verify 201 response with returned ID using typed client")
     public void testCreateUser() {
-        Map<String, String> payload = Map.of(
-                "name", "morpheus",
-                "job", "leader"
-        );
-        Response response = reqresService.createUser(payload);
-        Assert.assertEquals(response.getStatusCode(), 201);
-        Assert.assertEquals(response.jsonPath().getString("name"), "morpheus");
-        createdUserId = response.jsonPath().getString("id");
-        Assert.assertNotNull(createdUserId);
+        ReqresUser requestUser = ReqresUser.builder()
+                .name(randomUserName)
+                .job(initialJob)
+                .build();
+
+        ReqresUser createdUser = reqresClient.createUser(requestUser);
+        ReqresAssertions.assertUserCreated(createdUser, randomUserName, initialJob);
+        createdUserId = createdUser.getId();
     }
 
     // ── UPDATE ───────────────────────────────────────────────────────────────
@@ -73,14 +81,13 @@ public class ReqresTest extends BaseReqresTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Update job title of created user and verify updatedAt timestamp is returned")
     public void testUpdateUser() {
-        Map<String, String> payload = Map.of(
-                "name", "morpheus",
-                "job", "zion resident"
-        );
-        Response response = reqresService.updateUser(Integer.parseInt(createdUserId), payload);
-        Assert.assertEquals(response.getStatusCode(), 200);
-        Assert.assertEquals(response.jsonPath().getString("job"), "zion resident");
-        Assert.assertNotNull(response.jsonPath().getString("updatedAt"));
+        ReqresUser updateRequest = ReqresUser.builder()
+                .name(randomUserName)
+                .job(updatedJob)
+                .build();
+
+        ReqresUser updatedUser = reqresClient.updateUser(Integer.parseInt(createdUserId), updateRequest);
+        ReqresAssertions.assertUserUpdated(updatedUser, updatedJob);
     }
 
     // ── DELETE ───────────────────────────────────────────────────────────────
@@ -90,8 +97,8 @@ public class ReqresTest extends BaseReqresTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Delete the created user and verify 204 No Content response")
     public void testDeleteUser() {
-        Response response = reqresService.deleteUser(Integer.parseInt(createdUserId));
-        Assert.assertEquals(response.getStatusCode(), 204);
+        Response response = reqresClient.deleteUserResponse(Integer.parseInt(createdUserId));
+        ReqresAssertions.assertStatusCode(response, 204);
     }
 
     // ── NEGATIVE ─────────────────────────────────────────────────────────────
@@ -101,17 +108,16 @@ public class ReqresTest extends BaseReqresTest {
     @Severity(SeverityLevel.NORMAL)
     @Description("Fetch user with non-existent ID 9999 and verify 404 Not Found response")
     public void testGetNonExistentUser() {
-        Response response = reqresService.getUserById(9999);
-        Assert.assertEquals(response.getStatusCode(), 404);
+        Response response = reqresClient.getUserResponse(9999);
+        ReqresAssertions.assertStatusCode(response, 404);
     }
 
-    @Test(description = "Verify register with missing password returns 400")
+    @Test(description = "Verify register with empty payload returns non-5xx")
     @Story("Create User")
     @Severity(SeverityLevel.NORMAL)
-    @Description("Attempt to create user with empty payload and verify 400 Bad Request response")
+    @Description("Attempt to create user with empty payload and verify non-5xx response")
     public void testCreateUserWithEmptyPayload() {
-        Response response = reqresService.createUser(Map.of());
-        // ReqRes returns 201 even for empty payload (it's a mock API) — assert it doesn't 500
+        Response response = reqresClient.createUserResponse(Map.of());
         Assert.assertTrue(response.getStatusCode() < 500,
                 "Expected non-5xx response for empty payload, got: " + response.getStatusCode());
     }

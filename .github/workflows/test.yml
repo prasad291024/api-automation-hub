@@ -35,6 +35,8 @@ jobs:
         with:
           path: ~/.m2/repository/com/prasad_v
           key: framework-core-${{ github.sha }}
+          restore-keys: |
+            framework-core-
 
   test:
     name: Test — ${{ matrix.module }}
@@ -61,6 +63,8 @@ jobs:
         with:
           path: ~/.m2/repository/com/prasad_v
           key: framework-core-${{ github.sha }}
+          restore-keys: |
+            framework-core-
 
       - name: Run ${{ matrix.module }} tests
         run: mvn -B -pl ${{ matrix.module }} clean test

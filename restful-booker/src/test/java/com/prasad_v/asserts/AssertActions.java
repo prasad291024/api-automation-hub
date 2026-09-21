@@ -36,13 +36,24 @@ public class AssertActions {
     }
 
     /**
+     * Validates that two generic Objects are equal.
+     *
+     * @param actual      The actual value
+     * @param expected    The expected value
+     * @param description Custom message if assertion fails
+     */
+    public void verifyResponseBody(Object actual, Object expected, String description) {
+        assertEquals(actual, expected, description);
+    }
+
+    /**
      * Validates the status code of an API response.
      *
      * @param response The RestAssured response object
      * @param expected The expected status code (e.g., 200, 201, 404)
      */
     public void verifyStatusCode(Response response, Integer expected) {
-        assertEquals(response.getStatusCode(), expected);
+        assertEquals(Integer.valueOf(response.getStatusCode()), expected);
     }
 
     /**
@@ -55,14 +66,53 @@ public class AssertActions {
      * @param keyActual The actual value from response
      */
     public void verifyStringKey(String keyExpect, String keyActual) {
-        // Check that expected string is not null
-        assertThat(keyExpect).isNotNull();
+        assertThat(keyExpect).as("Expected key").isNotNull();
+        assertThat(keyExpect).as("Expected key").isNotBlank();
+        assertThat(keyActual).as("Actual key").isEqualTo(keyExpect);
+    }
 
-        // Also check that it's not blank or empty
-        assertThat(keyExpect).isNotBlank();
+    /**
+     * Validates string key equality with a custom failure description.
+     *
+     * @param keyActual   The actual value from response
+     * @param keyExpect   The expected value
+     * @param description Custom failure message
+     */
+    public void verifyStringKey(String keyActual, String keyExpect, String description) {
+        assertThat(keyActual).as(description).isEqualTo(keyExpect);
+    }
 
-        // Check equality between expected and actual
-        assertThat(keyExpect).isEqualTo(keyActual);
+    /**
+     * Validates that an Integer value is greater than a given threshold.
+     *
+     * @param actual      Actual int value
+     * @param threshold   Value it should exceed
+     * @param description Custom message
+     */
+    public void verifyIntegerGreaterThan(int actual, int threshold, String description) {
+        assertThat(actual).as(description).isGreaterThan(threshold);
+    }
+
+    /**
+     * Validates Integer equality with description.
+     *
+     * @param actual      Actual integer
+     * @param expected    Expected integer
+     * @param description Custom message
+     */
+    public void verifyIntegerKey(Integer actual, Integer expected, String description) {
+        assertThat(actual).as(description).isEqualTo(expected);
+    }
+
+    /**
+     * Validates Boolean equality with description.
+     *
+     * @param actual      Actual boolean
+     * @param expected    Expected boolean
+     * @param description Custom message
+     */
+    public void verifyBooleanKey(Boolean actual, Boolean expected, String description) {
+        assertThat(actual).as(description).isEqualTo(expected);
     }
 
     /**
@@ -83,38 +133,3 @@ public class AssertActions {
         assertThat(keyExpect).isNotNull();
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-This program is a part of the com.prasad_v.asserts package and is used for performing various assertions.
-
-It includes methods for validating the status code, response body (strings and integers), and checking for null values.
-The methods use the following libraries:
-
-- RestAssured for accessing HTTP response details
-- TestNG for standard assertions
-- AssertJ for fluent and readable assertions
-- Java's assertEquals for standard assertions
-- Java's assertThat for fluent assertions
-- Java's Integer class for integer operations
-- Java's String class for string operations
-- Java's Boolean class for boolean operations
-- Java's Object class for general object operations
-- Java's Class class for class operations
-- Java's Throwable class for exception handling
-- Java's Exception class for exception handling
-- Java's RuntimeException class for runtime exceptions
-- Java's NullPointerException class for handling null pointer exceptions
-
- */

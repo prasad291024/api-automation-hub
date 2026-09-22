@@ -1,8 +1,5 @@
 ### Maven ###
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
 ### Logs ###
 **/logs/
@@ -40,8 +37,6 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
 ### VS Code ###
 .vscode/
@@ -53,4 +48,4 @@ CLAUDE.md
 .DS_Store
 
 ### Kotlin ###
-.kotlin
+.kotlin/
